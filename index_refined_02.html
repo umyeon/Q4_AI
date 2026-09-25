@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>BOOK MATCHING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root{
+  --bg:#eef3f5; --card:#fff; --ink:#111; --muted:#777; --line:#e5e7e8;
+  --red:#ef3f43; --radius:22px; --nav-h:76px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100dvh;position:relative}
+button{font:inherit;color:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{border:0}
+.app{width:100%;max-width:100%;margin:0 auto;min-height:100dvh;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom))}
+.screen{display:none;width:100%;max-width:100%;min-height:calc(100dvh - var(--nav-h));padding:28px 20px 36px;overflow-x:hidden;animation:screenIn .28s ease}
+.screen.active{display:block}
+@keyframes screenIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.display{font-family:"Archivo Black","Arial Black",sans-serif;font-weight:900;letter-spacing:-.055em;line-height:.88}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.08em}
+.muted{color:var(--muted)}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:14px 24px;background:var(--red);color:white;font-weight:900;cursor:pointer}
+.text-btn{background:none;padding:10px;font-weight:800;cursor:pointer}
+.section-title{font-size:34px;margin:0 0 8px}
+.subcopy{margin:0;color:#555;line-height:1.55}
+
+/* FOR YOU — reference-led graphic composition */
+#forYou{padding:0 0 42px;background:#e8edf9;}
+.hero{min-height:auto;display:block;padding:26px 18px 0;text-align:center;overflow:hidden}
+.hero h1{font-family:Arial Black,Arial,"Noto Sans KR",sans-serif;font-size:clamp(48px,14.5vw,76px);line-height:.92;letter-spacing:-.055em;color:#bd2e20;margin:18px auto 0;white-space:nowrap;max-width:100%}
+.hero .ko-title{font-size:clamp(21px,6vw,29px);font-weight:900;line-height:1.25;margin:22px 0 8px;letter-spacing:-.055em;color:#050505}
+.hero-art{height:auto;min-height:0;display:block;margin:2px auto 0;position:relative;width:min(92%,430px)}
+.hero-art img{display:block;width:100%;height:auto;object-fit:contain}
+.book-3d{display:none}
+.intro{padding:18px 28px 44px;text-align:left;background:#e8edf9}
+.intro p{font-size:17px;line-height:1.62;letter-spacing:-.025em;margin:0 auto 28px;max-width:390px;color:#111}
+.intro .pill{display:flex;margin:0 auto;background:#bd2e20;box-shadow:none}
+/* reference-style desktop top tabs are translated into mobile visual language via the existing fixed nav; functionality unchanged */
+
+/* DISCOVER */
+.discover-start{padding-top:42px}
+.discover-start h2{font-size:42px;margin:0 0 12px}
+.question-list{display:grid;gap:14px;margin-top:34px}
+.choice{width:100%;text-align:left;background:white;border-radius:var(--radius);padding:24px 22px;font-size:18px;font-weight:800;line-height:1.5;box-shadow:0 7px 22px rgba(0,0,0,.035);cursor:pointer;transition:.18s}
+.choice:active{transform:scale(.985);color:var(--red)}
+.loading,.match-result{min-height:65dvh;display:grid;place-items:center;text-align:center}
+.loading-inner,.result-inner{text-align:center}
+.hearts{height:96px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:32px;margin-bottom:18px}
+.hearts span{animation:pulse .8s ease-in-out infinite alternate}
+.hearts span:nth-child(2){animation-delay:.12s}
+.hearts span:nth-child(3){animation-delay:.24s;color:var(--red)}
+.hearts span:nth-child(4){animation-delay:.36s}
+.hearts span:nth-child(5){animation-delay:.48s}
+@keyframes pulse{to{transform:translateY(-8px) scale(1.13)}}
+.result-heart{color:var(--red);font-size:44px}
+.result-match{font-size:58px;margin:12px 0 4px}
+.result-theme{font-size:22px;font-weight:900;margin:0 0 14px}
+.books-head{padding:10px 0 24px}
+.books-head h2{font-size:42px;margin:0 0 10px}
+.match-label{color:var(--red);font-weight:900}
+.book-grid{display:grid;width:100%;max-width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.book-card{background:white;border-radius:var(--radius);padding:13px;box-shadow:0 7px 22px rgba(0,0,0,.035);cursor:pointer;animation:cardIn .35s both}
+.book-card:nth-child(2){animation-delay:.07s}.book-card:nth-child(3){animation-delay:.14s}.book-card:nth-child(4){animation-delay:.21s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}}
+.cover{aspect-ratio:2/3;background:#e5e8e9;border-radius:9px;display:grid;place-items:center;overflow:hidden;color:#777;font-weight:800;text-align:center;padding:8px}
+.cover img{width:100%;height:100%;object-fit:contain}
+.book-card h3{font-size:16px;margin:13px 0 7px;line-height:1.35}
+.book-card .question{font-size:13px;line-height:1.45;color:#555;min-height:38px}
+.profile-link{font-size:11px;font-weight:900;letter-spacing:.04em;margin-top:12px}
+
+/* SHEET */
+.scrim{display:none;position:fixed;z-index:30;inset:0;background:rgba(0,0,0,.42)}
+.scrim.open{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;transform:none;width:100%;max-width:100%;max-height:88dvh;overflow:auto;background:white;border-radius:28px 28px 0 0;padding:18px 22px calc(30px + env(safe-area-inset-bottom))}
+.sheet-top{display:flex;justify-content:space-between;align-items:center}
+.close{background:none;font-size:26px;padding:8px;cursor:pointer}
+.profile-cover{width:33%;min-width:112px;margin:8px auto 18px}
+.profile-title{text-align:center}
+.profile-title h2{font-size:24px;margin:7px 0 5px}
+.tags{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:18px 0}
+.tag{font-size:12px;background:#f1f2f2;border-radius:999px;padding:8px 10px}
+.about{border-top:1px solid var(--line);padding-top:20px;margin-top:18px;line-height:1.65}
+.like-action{display:grid;place-items:center;margin:26px 0;background:none;width:100%;cursor:pointer}
+.like-action .heart{font-size:36px;line-height:1;color:#111}
+.like-action.liked .heart,.like-action.liked span{color:var(--red)}
+.like-action.pop{animation:likePop .28s}
+@keyframes likePop{50%{transform:scale(1.14)}}
+.meet-wrap{text-align:center;margin-top:8px}
+
+/* LIKED */
+.liked-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 14px;margin-top:26px}
+.liked-item{cursor:pointer}
+.liked-item .cover{background:white}
+.empty{min-height:62dvh;display:grid;place-items:center;text-align:center}
+.empty .empty-heart{font-size:44px;margin-bottom:16px}
+.empty p{line-height:1.6;color:#555}
+
+/* MATCHED */
+.match-list{display:grid;gap:14px;margin-top:26px}
+.match-card{display:grid;grid-template-columns:92px 1fr;gap:16px;background:white;border-radius:var(--radius);padding:14px;align-items:center}
+.match-card .cover{width:92px}
+.match-card h3{margin:0 0 8px;font-size:17px}
+.match-card .small{font-size:13px;line-height:1.55}
+.catalog{display:inline-block;margin-top:11px;font-weight:900;font-size:13px;background:none;padding:0;cursor:pointer}
+
+/* MATCH OVERLAY */
+.match-overlay{display:none;position:fixed;z-index:40;inset:0;background:var(--bg);overflow:auto}
+.match-overlay.open{display:grid;place-items:center}
+.match-celebrate{width:100%;max-width:100%;padding:38px 24px;text-align:center}
+.float-hearts{color:var(--red);font-size:28px;word-spacing:14px;animation:float 1.4s ease-in-out infinite alternate}
+@keyframes float{to{transform:translateY(-10px)}}
+.match-celebrate h2{font-size:54px;margin:18px 0}
+.match-book{width:42%;margin:0 auto;animation:bookPop .42s ease}
+@keyframes bookPop{from{transform:scale(.82);opacity:.2}to{transform:scale(1);opacity:1}}
+.match-celebrate h3{font-size:21px;margin:18px 0 7px}
+.match-celebrate p{line-height:1.55}
+.match-actions{margin-top:26px;display:grid;justify-items:center;gap:8px}
+
+/* NAV */
+.bottom-nav{position:fixed;z-index:20;left:0;right:0;bottom:0;transform:none;width:100%;max-width:100%;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:8px 8px env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr)}
+.nav-btn{background:none;display:grid;place-items:center;align-content:center;gap:4px;color:#8a8a8a;font-size:11px;font-weight:800;cursor:pointer}
+.nav-btn .ico{font-size:22px;line-height:1}
+.nav-btn.active{color:var(--red)}
+.hidden{display:none!important}
+
+/* === Typography C + mobile width refinement === */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+body{position:relative}
+.app,.screen,.hero,.intro,.bottom-nav{width:100%;max-width:100%}
+img,svg,video,canvas{max-width:100%}
+.hero{width:100%;max-width:100%;padding-left:0;padding-right:0;overflow:hidden}
+.hero h1{
+  width:100%;max-width:100%;white-space:nowrap;text-align:center;
+  font-family:"Archivo Black","Arial Black",sans-serif;font-weight:400;
+  font-size:clamp(40px,11.4vw,59px);line-height:.96;letter-spacing:-.055em;
+  padding:0 1px;margin:0 auto
+}
+.hero .ko-title{
+  width:100%;max-width:100%;white-space:nowrap;text-align:center;
+  font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-weight:800;font-size:clamp(16px,5.05vw,23px);line-height:1.25;
+  letter-spacing:-.055em;margin:22px auto 18px;padding:0
+}
+.intro,.intro p{text-align:center}
+.intro p{margin-left:auto;margin-right:auto}
+
+
+/* === Refinement 02: hero scale / illustration / CTA / result timing visual === */
+
+/* BOOK MATCHING is intentionally two lines (BOOK / MATCHING).
+   Size is viewport-responsive but constrained to the content width. */
+.hero h1{
+  width:100%;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:normal;
+  word-break:keep-all;
+  text-align:center;
+  font-family:"Archivo Black","Arial Black",sans-serif;
+  font-weight:400;
+  font-size:clamp(54px,15.2vw,66px);
+  line-height:.88;
+  letter-spacing:-.065em;
+  padding:0;
+  margin:10px auto 0;
+}
+
+/* Keep Korean subtitle on one line, smaller than the English title. */
+.hero .ko-title{
+  width:100%;
+  max-width:100%;
+  white-space:nowrap;
+  text-align:center;
+  font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-weight:800;
+  font-size:clamp(16px,4.9vw,22px);
+  line-height:1.25;
+  letter-spacing:-.055em;
+  margin:24px auto 16px;
+  padding:0;
+}
+
+/* Illustration is now subordinate to the title. */
+.hero-art{
+  width:min(74%,320px);
+  margin:2px auto 0;
+}
+.hero-art img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* More breathing room before the primary action. */
+.intro p{
+  margin:0 auto 46px;
+}
+
+/* Stronger primary CTA without changing its wording or behavior. */
+.intro .pill{
+  min-height:54px;
+  padding:16px 32px;
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:.015em;
+  background:#bd2e20;
+  border:2px solid #a7241a;
+  box-shadow:0 7px 0 rgba(138,28,20,.16);
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+.intro .pill:active{
+  transform:translateY(3px);
+  box-shadow:0 4px 0 rgba(138,28,20,.16);
+}
+
+/* Horizontal scrolling remains disabled. */
+html,body,.app,.screen{
+  max-width:100%;
+  overflow-x:hidden !important;
+}
+
+</style>
+</head>
+<body>
+<main class="app">
+  <section id="forYou" class="screen active">
+    <div class="hero">
+      <h1 class="display">BOOK<br>MATCHING</h1>
+      <div class="ko-title">지금, 누구와 연결되고 싶나요?</div>
+      <div class="hero-art"><img src="book-matching-visual.png" alt="책과 하트가 연결되는 BOOK MATCHING 일러스트"></div>
+    </div>
+    <div class="intro">
+      <p>사람은 조금 부담스럽고,<br>혼자는 가끔 심심하고,<br>AI와의 대화는 편하지만 뭔가 아쉽고.<br><br>당신과 잘 맞는 책을 찾아보세요.<br>어쩌면 지금 필요한 연결은<br>한 권의 책에서 시작될지도 모르니까요.</p>
+      <button class="pill" data-go="discover">MATCH START ♥</button>
+    </div>
+  </section>
+
+  <section id="discover" class="screen">
+    <div id="discoverStart" class="discover-start">
+      <h2 class="display">WHAT ARE YOU<br>LOOKING FOR?</h2>
+      <p class="subcopy">요즘, 어떤 관계를 찾고 있나요?</p>
+      <div class="question-list">
+        <button class="choice" data-theme="0">혼자가 편한데, 왜 가끔 외로운 걸까요?</button>
+        <button class="choice" data-theme="1">AI와도 진짜 관계를 맺을 수 있을까요?</button>
+        <button class="choice" data-theme="2">다시 사람과 연결되는 방법을 알고 싶어요.</button>
+      </div>
+    </div>
+    <div id="finding" class="loading hidden">
+      <div class="loading-inner">
+        <div class="hearts"><span>♡</span><span>♡</span><span>♥</span><span>♡</span><span>♡</span></div>
+        <div class="eyebrow">FINDING YOUR MATCH...</div>
+      </div>
+    </div>
+    <div id="matchResult" class="match-result hidden"><div id="resultInner" class="result-inner"></div></div>
+    <div id="bookResults" class="hidden">
+      <div class="books-head">
+        <h2 class="display">YOUR<br>MATCHES</h2>
+        <div id="resultMeta"></div>
+      </div>
+      <div id="bookGrid" class="book-grid"></div>
+    </div>
+  </section>
+
+  <section id="liked" class="screen">
+    <h2 class="display section-title">LIKED</h2>
+    <div class="eyebrow">YOUR LIKES ♥</div>
+    <p class="subcopy">마음에 둔 책들이에요.</p>
+    <div id="likedContent"></div>
+  </section>
+
+  <section id="matched" class="screen">
+    <h2 class="display section-title">MATCHED</h2>
+    <div class="eyebrow">YOUR BOOK MATCHES ♥</div>
+    <p class="subcopy">당신과 연결된 책들이에요.</p>
+    <div id="matchedContent"></div>
+  </section>
+</main>
+
+<nav class="bottom-nav" aria-label="하단 탐색">
+  <button class="nav-btn active" data-screen="forYou"><span class="ico">⌂</span><span>For You</span></button>
+  <button class="nav-btn" data-screen="discover"><span class="ico">⌕</span><span>Discover</span></button>
+  <button class="nav-btn" data-screen="liked"><span class="ico">♡</span><span>Liked</span></button>
+  <button class="nav-btn" data-screen="matched"><span class="ico">✓</span><span>Matched</span></button>
+</nav>
+
+<div id="profileScrim" class="scrim">
+  <article class="sheet">
+    <div class="sheet-top"><span class="eyebrow">BOOK PROFILE</span><button id="closeSheet" class="close" aria-label="닫기">×</button></div>
+    <div id="profileBody"></div>
+  </article>
+</div>
+
+<div id="matchOverlay" class="match-overlay"><div id="matchCelebrate" class="match-celebrate"></div></div>
+
+<script>
+const themes = [
+  {match:"MATCH 0%", title:"연결이 끊긴 시대", personal:"혼자와 연결 사이의 거리가 궁금한 당신에게."},
+  {match:"MATCH ?", title:"새로운 연결", personal:"새로운 관계의 가능성이 궁금한 당신에게."},
+  {match:"MATCH 100%", title:"다시 연결하는 법", personal:"다시 연결되는 방법을 찾고 싶은 당신에게."}
+];
+
+/* 실제 표지 이미지·저자·소개·도서관 상세 URL은 최종 도서 데이터로 교체 */
+const books = [
+  {id:"b01",theme:0,title:"고립의 시대",author:"저자 정보",q:"우리는 연결되어 있는데 왜 외로울까요?",tags:["#고립","#외로움","#연결"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b02",theme:0,title:"손절사회",author:"저자 정보",q:"관계를 끊는 일은 왜 익숙해졌을까요?",tags:["#관계","#단절","#사회"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b03",theme:0,title:"필연적 혼자의 시대",author:"저자 정보",q:"혼자인 삶과 외로움은 같은 걸까요?",tags:["#혼자","#고독","#삶"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b04",theme:0,title:"고독한 이방인의 산책",author:"저자 정보",q:"낯선 곳에서 우리는 어떻게 연결될까요?",tags:["#고독","#산책","#관계"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+
+  {id:"b05",theme:1,title:"AI와 인간관계의 변화",author:"저자 정보",q:"AI와도 진짜 관계를 맺을 수 있을까요?",tags:["#AI","#관계","#변화"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b06",theme:1,title:"AI 시대의 돌봄",author:"저자 정보",q:"돌봄의 일부를 AI에게 맡길 수 있을까요?",tags:["#AI","#돌봄","#기술"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b07",theme:1,title:"마음을 담은 기계",author:"저자 정보",q:"기계에게도 마음을 기대하게 될까요?",tags:["#AI","#마음","#공감"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b08",theme:1,title:"다정한 비인간",author:"저자 정보",q:"인간이 아닌 존재와도 다정해질 수 있을까요?",tags:["#비인간","#다정함","#연결"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+
+  {id:"b09",theme:2,title:"낯선 사람에게 말을 걸면",author:"저자 정보",q:"낯선 사람과의 대화는 무엇을 바꿀까요?",tags:["#대화","#타인","#연결"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b10",theme:2,title:"돌봄 선언",author:"저자 정보",q:"서로 돌보는 사회는 어떻게 가능할까요?",tags:["#돌봄","#공동체","#연대"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b11",theme:2,title:"두 번째 산",author:"저자 정보",q:"나를 넘어 함께 사는 삶은 어떤 모습일까요?",tags:["#공동체","#관계","#삶"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""},
+  {id:"b12",theme:2,title:"커뮤니티에 입장하셨습니다",author:"저자 정보",q:"우리는 어떻게 다시 공동체를 만들까요?",tags:["#커뮤니티","#공동체","#연결"],about:"책 소개가 들어갈 자리입니다. 실제 도서 소개 문안으로 교체해 주세요.",cover:"",url:""}
+];
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const state = {
+  liked:new Set(JSON.parse(localStorage.getItem("bookMatchingLiked") || "[]")),
+  matched:new Set(JSON.parse(localStorage.getItem("bookMatchingMatched") || "[]")),
+  currentTheme:null, currentBook:null
+};
+function save(){
+  localStorage.setItem("bookMatchingLiked", JSON.stringify([...state.liked]));
+  localStorage.setItem("bookMatchingMatched", JSON.stringify([...state.matched]));
+}
+function coverHTML(b){
+  return `<div class="cover">${b.cover ? `<img src="${b.cover}" alt="${b.title} 표지">` : `<span>${b.title}</span>`}</div>`;
+}
+function showScreen(id){
+  $$(".screen").forEach(x=>x.classList.toggle("active",x.id===id));
+  $$(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.screen===id));
+  if(id==="liked") renderLiked();
+  if(id==="matched") renderMatched();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$$(".nav-btn").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
+$("[data-go='discover']").onclick=()=>showScreen("discover");
+
+$$(".choice").forEach(btn=>btn.onclick=()=>startMatch(+btn.dataset.theme));
+function startMatch(i){
+  state.currentTheme=i;
+  $("#discoverStart").classList.add("hidden");
+  $("#bookResults").classList.add("hidden");
+  $("#finding").classList.remove("hidden");
+  setTimeout(()=>{
+    $("#finding").classList.add("hidden");
+    const t=themes[i];
+    $("#resultInner").innerHTML=`<div class="result-heart">♥</div><div class="display result-match">${t.match}</div><div class="result-theme">${t.title}</div><p class="subcopy">${t.personal}</p>`;
+    $("#matchResult").classList.remove("hidden");
+    setTimeout(()=>{
+      $("#matchResult").classList.add("hidden");
+      renderBooks(i);
+      $("#bookResults").classList.remove("hidden");
+    },2000);
+  },1200);
+}
+function renderBooks(i){
+  const t=themes[i];
+  $("#resultMeta").innerHTML=`<div class="match-label">${t.match}</div><strong>${t.title}</strong>`;
+  $("#bookGrid").innerHTML=books.filter(b=>b.theme===i).map(b=>`
+    <article class="book-card" data-book="${b.id}">
+      ${coverHTML(b)}
+      <h3>${b.title} ✓</h3>
+      <div class="question">“${b.q}”</div>
+      <div class="profile-link">VIEW PROFILE →</div>
+    </article>`).join("");
+  $$("#bookGrid .book-card").forEach(x=>x.onclick=()=>openProfile(x.dataset.book));
+}
+function openProfile(id){
+  const b=books.find(x=>x.id===id); state.currentBook=b;
+  const liked=state.liked.has(id);
+  $("#profileBody").innerHTML=`
+    <div class="profile-cover">${coverHTML(b)}</div>
+    <div class="profile-title">
+      <h2>${b.title} ✓</h2><div class="muted">${b.author}</div>
+      <p>“${b.q}”</p>
+    </div>
+    <div class="tags">${b.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    <div class="about"><div class="eyebrow">ABOUT THIS BOOK</div><p>${b.about}</p></div>
+    <button id="likeAction" class="like-action ${liked?"liked":""}">
+      <span class="heart">${liked?"♥":"♡"}</span><span>${liked?"LIKED":"LIKE"}</span>
+    </button>
+    <div class="meet-wrap"><button id="meetBook" class="pill">도서관에서 만나기 ♥</button></div>`;
+  $("#profileScrim").classList.add("open");
+  $("#likeAction").onclick=toggleLike;
+  $("#meetBook").onclick=matchBook;
+}
+function closeProfile(){ $("#profileScrim").classList.remove("open"); }
+$("#closeSheet").onclick=closeProfile;
+$("#profileScrim").onclick=e=>{if(e.target.id==="profileScrim") closeProfile()};
+
+function toggleLike(){
+  const id=state.currentBook.id;
+  state.liked.has(id)?state.liked.delete(id):state.liked.add(id);
+  save();
+  const el=$("#likeAction"), liked=state.liked.has(id);
+  el.classList.toggle("liked",liked); el.classList.add("pop");
+  el.innerHTML=`<span class="heart">${liked?"♥":"♡"}</span><span>${liked?"LIKED":"LIKE"}</span>`;
+  setTimeout(()=>el.classList.remove("pop"),300);
+}
+function matchBook(){
+  const b=state.currentBook;
+  state.matched.add(b.id); save(); closeProfile();
+  $("#matchCelebrate").innerHTML=`
+    <div class="float-hearts">♥ ♥ ♥</div>
+    <h2 class="display">IT'S A<br>MATCH!</h2>
+    <div class="match-book">${coverHTML(b)}</div>
+    <h3>《${b.title}》</h3>
+    <p>당신과 이 책이<br>연결되었습니다.</p>
+    <div class="match-actions">
+      <button class="pill" id="catalogNow">도서 정보 확인하기 →</button>
+      <button class="text-btn" id="continueDiscover">계속 둘러보기</button>
+    </div>`;
+  $("#matchOverlay").classList.add("open");
+  $("#catalogNow").onclick=()=>openCatalog(b);
+  $("#continueDiscover").onclick=()=>{
+    $("#matchOverlay").classList.remove("open");
+    resetDiscover(); showScreen("discover");
+  };
+}
+function openCatalog(b){
+  if(b.url) location.href=b.url;
+}
+function resetDiscover(){
+  $("#discoverStart").classList.remove("hidden");
+  $("#finding").classList.add("hidden"); $("#matchResult").classList.add("hidden"); $("#bookResults").classList.add("hidden");
+}
+function renderLiked(){
+  const list=books.filter(b=>state.liked.has(b.id));
+  $("#likedContent").innerHTML=list.length
+    ? `<div class="liked-grid">${list.map(b=>`<div class="liked-item" data-book="${b.id}">${coverHTML(b)}</div>`).join("")}</div>`
+    : `<div class="empty"><div><div class="empty-heart">♡</div><strong>아직 마음에 둔 책이 없어요.</strong><p>DISCOVER에서 마음에 드는 책에<br>♥를 눌러보세요.</p><button class="pill" data-empty-go="discover">책 둘러보기</button></div></div>`;
+  $$("#likedContent [data-book]").forEach(x=>x.onclick=()=>openProfile(x.dataset.book));
+  const go=$("#likedContent [data-empty-go]"); if(go) go.onclick=()=>showScreen("discover");
+}
+function renderMatched(){
+  const list=books.filter(b=>state.matched.has(b.id));
+  $("#matchedContent").innerHTML=list.length
+    ? `<div class="match-list">${list.map(b=>{const t=themes[b.theme];return `
+      <article class="match-card">
+        ${coverHTML(b)}
+        <div><h3>${b.title} ✓</h3><div class="small"><strong>${t.match}</strong><br>${t.title}</div>
+        <button class="catalog" data-catalog="${b.id}">도서 정보 →</button></div>
+      </article>`}).join("")}</div>`
+    : `<div class="empty"><div><div class="empty-heart">♡</div><strong>아직 연결된 책이 없어요.</strong><p>당신과 만나게 될 책을<br>찾아보세요.</p><button class="pill" data-empty-go="discover">MATCH 찾기</button></div></div>`;
+  $$("#matchedContent [data-catalog]").forEach(x=>x.onclick=()=>openCatalog(books.find(b=>b.id===x.dataset.catalog)));
+  const go=$("#matchedContent [data-empty-go]"); if(go) go.onclick=()=>showScreen("discover");
+}
+</script>
+</body>
+</html>
